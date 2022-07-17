@@ -2,6 +2,7 @@ import gym
 import random
 import numpy as np
 
+
 env = gym.make("BipedalWalker-v3")
 
 
@@ -61,13 +62,13 @@ def test():
 
     observation = env.reset()
     print(observation, '\n')
-    # env.render()
+    env.render()
     action = env.action_space.sample()
     observation, reward, done, info = env.step(action)
 
     print(action, '\n')
     print(observation, '\n')
     print(reward)
-    # print(done)
+    print(done)
 
-    # env.close()
+    env.close()

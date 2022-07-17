@@ -3,6 +3,7 @@ from tensorforce.environments import Environment
 import numpy as np
 import time
 
+
 # definitely not the best way to do this but I don't care
 action_decode = np.zeros((81, 4))
 count = 0
@@ -13,6 +14,7 @@ for i in vals:
             for l in vals:
                 action_decode[count] = [i, j, k, l]
                 count = count + 1
+
 
 max_timesteps = 1000
 
