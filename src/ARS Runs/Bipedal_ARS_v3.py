@@ -2,12 +2,12 @@ import numpy as np
 import gym
 import time
 
-episodes = 1500                 # number of training episodes
-learning_rate = 0.02            # learning rate
-num_deltas = 16                 # number of random nearby points
-num_best_deltas = 16            # highest reward points used to update model
-noise = 0.03                    # random noise
-env_name = 'BipedalWalker-v3'   # environment
+episodes = 1500                  # number of training episodes
+learning_rate = 0.02             # learning rate
+num_deltas = 16                  # number of random nearby points
+num_best_deltas = 16             # highest reward points used to update model
+noise = 0.03                     # random noise
+env_name = 'BipedalWalker-v3'    # environment
 render_freq = 2000               # render frequency
 
 env = gym.make(env_name)

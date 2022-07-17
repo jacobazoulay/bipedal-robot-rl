@@ -132,12 +132,11 @@ class ArsTrainer():
         self.hp = hp or Hp()
         np.random.seed(self.hp.seed)
         self.env = gym.make(self.hp.env_name)
-        self.hp.episode_length = self.env.spec.max_episode_steps or self.hp.episode_length
-        self.input_size = input_size or self.env.observation_space.shape[0]
-        self.output_size = output_size or self.env.action_space.shape[0]
-        self.normalizer = normalizer or Normalizer(self.input_size)
-        self.policy = policy or Policy(self.input_size, self.output_size, self.hp)
-        # self.record_video = False
+        self.hp.episode_length = self.env.spec.max_episode_steps
+        self.input_size = self.env.observation_space.shape[0]
+        self.output_size = self.env.action_space.shape[0]
+        self.normalizer = Normalizer(self.input_size)
+        self.policy = Policy(self.input_size, self.output_size, self.hp)
 
     # Explore the policy on one specific direction and over one episode
     def explore(self, direction=None, delta=None, render=False):
