@@ -2,12 +2,12 @@ import numpy as np
 import gym
 import time
 
-episodes = 10                 # number of training episodes
-learning_rate = 0.02            # learning rate
-num_deltas = 16                 # number of random nearby points
-num_best_deltas = 16            # highest reward points used to update model
-noise = 0.03                    # random noise
-env_name = 'BipedalWalker-v3'   # environment
+episodes = 1500                  # number of training episodes
+learning_rate = 0.02             # learning rate
+num_deltas = 16                  # number of random nearby points
+num_best_deltas = 16             # highest reward points used to update model
+noise = 0.03                     # random noise
+env_name = 'BipedalWalker-v3'    # environment
 render_freq = 2000               # render frequency
 
 env = gym.make(env_name)
@@ -87,42 +87,54 @@ def explore(direction=None, delta=None, render=False):
     return reward_sum, num_steps
 
 
-start = time.time()
-data = []
-for episode in range(episodes):
-    pos_rewards = [0] * num_deltas    # list of rewards from positive deltas
-    neg_rewards = [0] * num_deltas    # list of rewards from negative deltas
-    deltas = [np.random.randn(*theta.shape) for delta in range(num_deltas)]  # random noise to apply to weights
-    render = False
-    avg_steps = 0
-    if episode % render_freq == 0 and episode != 0:
-        render = True
+total_start = time.time()
+for learn_rate in [0.02, 0.06, 0.001]:
+    learning_rate = learn_rate
+    start = time.time()
+    data = []
+    n = np.zeros(input_size)  # list of 24 numbers, counts of observed states
+    mean = np.zeros(input_size)  # mean of observed state
+    mean_dif = np.zeros(input_size)  # mean dif of observed states used to calculated std
+    std = np.zeros(input_size)  # std of observed states
 
-    for i in range(num_deltas):
-        pos_rewards[i], num_step_pos = explore(direction="+", delta=deltas[i], render=render)
-        neg_rewards[i], num_step_neg = explore(direction="-", delta=deltas[i], render=render)
-        avg_steps = avg_steps + num_step_pos + num_step_neg
+    theta = np.zeros((output_size, input_size))  # weights of network 4x24 matrix
 
-    avg_steps = avg_steps / (2 * num_deltas)
-    sigma_rewards = np.array(pos_rewards + neg_rewards).std()                                           # std of rewards of batch of rollouts with random noise in weights
-    scores = {k: max(r_pos, r_neg) for k, (r_pos, r_neg) in enumerate(zip(pos_rewards, neg_rewards))}   # create dictionary (length of num_deltas) with highest rewards
-    order = sorted(scores.keys(), key=lambda x: scores[x], reverse=True)[:num_best_deltas]              # order of rollouts sorted by max reward
-    rollouts = [(pos_rewards[k], neg_rewards[k], deltas[k]) for k in order]                             # rollouts in order of max reward
+    for episode in range(episodes):
+        pos_rewards = [0] * num_deltas    # list of rewards from positive deltas
+        neg_rewards = [0] * num_deltas    # list of rewards from negative deltas
+        deltas = [np.random.randn(*theta.shape) for delta in range(num_deltas)]  # random noise to apply to weights
+        render = False
+        avg_steps = 0.0
+        if episode % render_freq == 0 and episode != 0:
+            render = True
 
-    update(rollouts, sigma_rewards)
+        for i in range(num_deltas):
+            pos_rewards[i], num_step_pos = explore(direction="+", delta=deltas[i], render=render)
+            neg_rewards[i], num_step_neg = explore(direction="-", delta=deltas[i], render=render)
+            avg_steps = avg_steps + num_step_pos + num_step_neg
 
-    reward_eval, num_steps = explore(render=render)
-    data_point = [episode + 1, reward_eval, num_steps, avg_steps, sigma_rewards]
-    data.append(data_point)
-    print('Episode: ', episode + 1, '   Reward: ', reward_eval)
+        avg_steps = avg_steps / (2 * num_deltas)
+        sigma_rewards = np.array(pos_rewards + neg_rewards).std()                                           # std of rewards of batch of rollouts with random noise in weights
+        scores = {k: max(r_pos, r_neg) for k, (r_pos, r_neg) in enumerate(zip(pos_rewards, neg_rewards))}   # create dictionary (length of num_deltas) with highest rewards
+        order = sorted(scores.keys(), key=lambda x: scores[x], reverse=True)[:num_best_deltas]              # order of rollouts sorted by max reward
+        rollouts = [(pos_rewards[k], neg_rewards[k], deltas[k]) for k in order]                             # rollouts in order of max reward
 
+        update(rollouts, sigma_rewards)
 
-end = time.time()
-runtime = end - start
-print(runtime)
-data.insert(0, [runtime, 0, 0, 0, 0])
-np.savetxt("Bipedal_v6_data_v2.csv",
-           data,
-           delimiter=", ",
-           fmt='% s')
+        reward_eval, num_steps = explore(render=render)
+        data_point = [episode + 1, reward_eval, num_steps, avg_steps, sigma_rewards]
+        data.append(data_point)
+        if episode % 100 == 0:
+            print('Episode: ', episode + 1, '   Reward: ', reward_eval, '   Alpha: ', learning_rate)
+    print(theta)
+    end = time.time()
+    runtime = end - start
+    data.insert(0, [runtime, learning_rate, 0, 0, 0])
+    filename = "Bipedal_data_" + str(int(learning_rate * 1000)) + ".csv"
+    np.savetxt(filename,
+               data,
+               delimiter=", ",
+               fmt='% s')
 
+total_end = time.time()
+print(total_end - total_start)
