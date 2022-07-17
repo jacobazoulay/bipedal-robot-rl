@@ -2,12 +2,6 @@ import gym
 import time
 import numpy as np
 
-env = gym.make('BipedalWalker-v3')
-start = time.time()
-render_freq = 1
-render = True
-episodes = 1000
-
 
 def policy_walk():
     """
@@ -114,6 +108,9 @@ def policy_stay_still():
 
 
 def policy_random():
+    """
+    Randomly apply torque movements and return data.
+    """
     data = []
     for episode in range(episodes):
         reward_sum = 0.0
@@ -133,15 +130,31 @@ def policy_random():
             print('Episode: ', episode + 1, '  Reward: ', reward_sum, '  Steps: ', num_step)
     return data
 
+def main():
+    global env
+    global start
+    global render_freq
+    global render
+    global episodes
 
-data = policy_random()
-print(data)
-end = time.time()
-runtime = end - start
-data.insert(0, [runtime, 0, 0])
-np.savetxt('Rewards_walk_forward.csv',
-           data,
-           delimiter=", ",
-           fmt='% s')
-print(runtime)
-env.close()
+    env = gym.make('BipedalWalker-v3')
+    start = time.time()
+    render_freq = 1
+    render = True
+    episodes = 1000
+
+    data = policy_random()
+    print(data)
+    end = time.time()
+    runtime = end - start
+    data.insert(0, [runtime, 0, 0])
+    np.savetxt('Rewards_walk_forward.csv',
+               data,
+               delimiter=", ",
+               fmt='% s')
+    print(runtime)
+    env.close()
+
+
+if __name__ == "__main__":
+    main()

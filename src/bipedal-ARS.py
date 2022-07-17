@@ -68,13 +68,19 @@ def explore(direction=None, delta=None, render=False):
 
 
 def main():
-    episodes = 1500  # number of training episodes
-    learning_rate = 0.02  # learning rate
-    num_deltas = 16  # number of random nearby points
-    num_best_deltas = 16  # highest reward points used to update model
-    noise = 0.03  # random noise
-    env_name = 'BipedalWalker-v3'  # environment
-    render_freq = 2000  # render frequency
+    global noise
+    global learning_rate
+    global num_best_deltas
+    global env
+    global episode_length
+
+    episodes = 1500                     # number of training episodes
+    learning_rate = 0.02                # learning rate
+    num_deltas = 16                     # number of random nearby points
+    num_best_deltas = 16                # highest reward points used to update model
+    noise = 0.03                        # random noise
+    env_name = 'BipedalWalker-v3'       # environment
+    render_freq = 2000                  # render frequency
 
     env = gym.make(env_name)
     episode_length = env.spec.max_episode_steps  # 1600 max steps per episode until done
